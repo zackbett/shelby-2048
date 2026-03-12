@@ -499,23 +499,41 @@ Submit anw
 
   <div className="fixed inset-0 flex items-center justify-center bg-black/60">
 
-    <div className="bg-[#9EF7B8] p-6 rounded-xl text-center shadow-2xl">
+    <div className="
+    bg-[#9EF7B8]
+    p-6
+    rounded-xl
+    text-center
+    shadow-2xl
+    animate-[popup_0.3s_ease-out]
+   ">
 
       <h2 className="text-xl font-bold mb-4 text-[#3b1f1a]">
         Enter Username
       </h2>
 
       <input
-        value={username}
-        onChange={(e)=>setUsername(e.target.value)}
-        className="border p-2 rounded mb-4 text-black"
-        placeholder="your name"
+  value={username}
+  onChange={(e)=>setUsername(e.target.value)}
+  placeholder="X name"
+  className="
+  w-full
+  bg-white
+  border border-gray-300
+  rounded-xl
+  px-4 py-2
+  text-black
+  shadow-inner
+  focus:outline-none
+  focus:ring-2 focus:ring-green-400
+  transition
+  "
       />
 
-      <br/>
+      
 
       <button
-        className="bg-[#1f7a5a] text-white px-4 py-2 rounded-lg font-bold shadow-md hover:scale-105 transition"
+        className="mt-4 bg-[#1f7a5a] text-white px-4 py-2 rounded-lg font-bold shadow-md"
         onClick={() => {
 
           if(!username) return
