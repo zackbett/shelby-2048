@@ -5,23 +5,26 @@ import { saveScore } from "@/lib/leaderboard"
 
 const themes = {
 
-  mode1: {
-    page: "bg-[#5b1f2b]",
-    board: "bg-[#e6b39a]",
-    text: "text-[#ffb199]"
-  },
+mode1: {
+page: "bg-[#5b1f2b]",
+board: "bg-[#e6b39a]",
+text: "text-[#ffb199]",
+pattern: "pattern-mode1"
+},
 
-  mode2: {
-    page: "bg-[#ffd6e7]",
-    board: "bg-[#e46aa9]",
-    text: "text-[#3b1f1a]"
-  },
+mode2: {
+page: "bg-[#ffd6e7]",
+board: "bg-[#e46aa9]",
+text: "text-[#3b1f1a]",
+pattern: "pattern-mode2"
+},
 
-  mode3: {
-    page: "bg-[#4b0f63]",
-    board: "bg-[#cfa6f4]",
-    text: "text-[#ffdfff]"
-  }
+mode3: {
+page: "bg-[#4b0f63]",
+board: "bg-[#cfa6f4]",
+text: "text-[#fdf1ff]",
+pattern: "pattern-mode3"
+}
 
 }
 
@@ -365,8 +368,13 @@ function moveDown() {
 
 return (
 
-<main className={`min-h-screen flex flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}>
+<main
+  className={`relative flex min-h-screen flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}
+>
+<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24">
+  <div className={`shelby-pattern ${currentTheme.pattern}`} />
 
+</div>
 <h1 className="text-5xl font-extrabold mb-3 drop-shadow-lg">
 Shelby 2048
 </h1>

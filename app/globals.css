@@ -43,3 +43,27 @@ body {
     transform: scale(1);
   }
 }
+/* Shelby background pattern */
+
+.shelby-pattern{
+position:absolute;
+inset:0;
+pointer-events:none;
+opacity:0.10;
+
+background-image:url("/assets/icons/shelby-logo.svg");
+background-repeat:repeat;
+background-size:120px;
+}
+
+.pattern-mode1{
+filter: sepia(40%) saturate(200%) hue-rotate(330deg);
+}
+
+.pattern-mode2{
+filter: saturate(200%) hue-rotate(310deg);
+}
+
+.pattern-mode3{
+filter: saturate(200%) hue-rotate(260deg);
+}
