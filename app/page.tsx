@@ -1,65 +1,239 @@
-import Image from "next/image";
+"use client"
+
+import { useState, useEffect } from "react"
+
+function createEmptyBoard() {
+  return Array(4)
+    .fill(null)
+    .map(() => Array(4).fill(0))
+}
+
+function addRandomTile(board: number[][]) {
+  const empty: [number, number][] = []
+
+  board.forEach((row, r) =>
+    row.forEach((cell, c) => {
+      if (cell === 0) empty.push([r, c])
+    })
+  )
+
+  if (empty.length === 0) return board
+
+  const [r, c] = empty[Math.floor(Math.random() * empty.length)]
+  board[r][c] = Math.random() < 0.9 ? 2 : 4
+
+  return [...board]
+}
+function slide(row: number[]) {
+  const arr = row.filter((num) => num)
+  const missing = 4 - arr.length
+  const zeros = Array(missing).fill(0)
+  return [...arr, ...zeros]
+}
+
+function combine(row: number[]) {
+  for (let i = 0; i < 3; i++) {
+    if (row[i] !== 0 && row[i] === row[i + 1]) {
+      row[i] *= 2
+      row[i + 1] = 0
+    }
+  }
+  return row
+}
 
 export default function Home() {
+  const [board, setBoard] = useState<number[][]>(createEmptyBoard())
+
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
+  const [touchEndY, setTouchEndY] = useState<number | null>(null)
+useEffect(() => {
+
+  let newBoard = createEmptyBoard()
+  newBoard = addRandomTile(newBoard)
+  newBoard = addRandomTile(newBoard)
+
+  setBoard(newBoard)
+
+}, [])
+  useEffect(() => {
+
+  const handleKey = (e: any) => {
+
+    if (e.key === "ArrowLeft") moveLeft()
+    if (e.key === "ArrowRight") moveRight()
+    if (e.key === "ArrowUp") moveUp()
+    if (e.key === "ArrowDown") moveDown()
+
+  }
+
+  window.addEventListener("keydown", handleKey)
+
+  return () => {
+    window.removeEventListener("keydown", handleKey)
+  }
+
+}, [board])
+const minSwipeDistance = 50
+
+function handleTouchStart(e: any) {
+  setTouchEnd(null)
+  setTouchStart(e.targetTouches[0].clientX)
+  setTouchStartY(e.targetTouches[0].clientY)
+}
+
+function handleTouchMove(e: any) {
+  setTouchEnd(e.targetTouches[0].clientX)
+  setTouchEndY(e.targetTouches[0].clientY)
+}
+
+function handleTouchEnd() {
+
+  if (!touchStart || !touchEnd || !touchStartY || !touchEndY) return
+
+  const distanceX = touchStart - touchEnd
+  const distanceY = touchStartY - touchEndY
+
+  const isLeft = distanceX > minSwipeDistance
+  const isRight = distanceX < -minSwipeDistance
+  const isUp = distanceY > minSwipeDistance
+  const isDown = distanceY < -minSwipeDistance
+
+  if (isLeft) moveLeft()
+  if (isRight) moveRight()
+  if (isUp) moveUp()
+  if (isDown) moveDown()
+}
+function moveLeft() {
+
+  let newBoard = board.map((row) => {
+
+    let newRow = slide(row)
+    newRow = combine(newRow)
+    newRow = slide(newRow)
+
+    return newRow
+  })
+
+  newBoard = addRandomTile(newBoard)
+
+  setBoard(newBoard)
+}
+
+function moveRight() {
+
+  let newBoard = board.map((row) => {
+
+    let reversed = [...row].reverse()
+
+    reversed = slide(reversed)
+    reversed = combine(reversed)
+    reversed = slide(reversed)
+
+    return reversed.reverse()
+  })
+
+  newBoard = addRandomTile(newBoard)
+
+  setBoard(newBoard)
+}
+
+function moveUp() {
+
+  let newBoard = [...board]
+
+  for (let col = 0; col < 4; col++) {
+
+    let column = [
+      newBoard[0][col],
+      newBoard[1][col],
+      newBoard[2][col],
+      newBoard[3][col]
+    ]
+
+    column = slide(column)
+    column = combine(column)
+    column = slide(column)
+
+    for (let row = 0; row < 4; row++) {
+      newBoard[row][col] = column[row]
+    }
+  }
+
+  newBoard = addRandomTile(newBoard)
+
+  setBoard([...newBoard])
+}
+
+function moveDown() {
+
+  let newBoard = [...board]
+
+  for (let col = 0; col < 4; col++) {
+
+    let column = [
+      newBoard[0][col],
+      newBoard[1][col],
+      newBoard[2][col],
+      newBoard[3][col]
+    ].reverse()
+
+    column = slide(column)
+    column = combine(column)
+    column = slide(column)
+
+    column = column.reverse()
+
+    for (let row = 0; row < 4; row++) {
+      newBoard[row][col] = column[row]
+    }
+  }
+
+  newBoard = addRandomTile(newBoard)
+
+  setBoard([...newBoard])
+}
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="flex min-h-screen flex-col items-center justify-center bg-black text-white touch-none">
+
+      <h1 className="text-4xl font-bold mb-6">Shelby 2048</h1>
+
+      <div className="bg-neutral-900 p-4 rounded-xl">
+
+        <div
+          className="grid grid-cols-4 gap-2 w-[320px] h-[320px]"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+>
+
+          {board.flat().map((num, i) => (
+            <div
+              key={i}
+              className="bg-neutral-700 rounded flex items-center justify-center text-xl font-bold aspect-square"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              {num !== 0 ? num : ""}
+            </div>
+          ))}
+
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+
+      </div>
+
+      <button
+        className="mt-6 bg-white text-black px-4 py-2 rounded"
+        onClick={() => {
+          let newBoard = createEmptyBoard()
+          newBoard = addRandomTile(newBoard)
+          newBoard = addRandomTile(newBoard)
+          setBoard(newBoard)
+        }}
+      >
+        New Game
+      </button>
+
+    </main>
+  )
 }
