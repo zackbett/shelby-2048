@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { saveScore } from "@/lib/leaderboard"
 
 const themes = {
 
@@ -81,6 +82,9 @@ export default function Home() {
   const [score, setScore] = useState(0)
   const [bestScore, setBestScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
+
+  const [showUsernameInput, setShowUsernameInput] = useState(false)
+  const [username, setUsername] = useState("")
 
   const [theme, setTheme] = useState<"mode1" | "mode2" | "mode3">("mode1")
 
@@ -464,14 +468,22 @@ setBoard(newBoard)
 setScore(0)
 setGameOver(false)
 
+setUsername("")
+setShowUsernameInput(false)
+
 }}
+
 >
 Start Over
 </button>
 
 <button
 className="bg-black text-white px-4 py-2 rounded-lg"
-onClick={()=>console.log("submit anw",score)}
+onClick={() => {
+setGameOver(false)
+setUsername("")
+setShowUsernameInput(true)}
+}
 >
 Submit anw
 </button>
@@ -483,7 +495,57 @@ Submit anw
 </div>
 
 )}
+{showUsernameInput && (
 
+  <div className="fixed inset-0 flex items-center justify-center bg-black/60">
+
+    <div className="bg-[#9EF7B8] p-6 rounded-xl text-center shadow-2xl">
+
+      <h2 className="text-xl font-bold mb-4 text-[#3b1f1a]">
+        Enter Username
+      </h2>
+
+      <input
+        value={username}
+        onChange={(e)=>setUsername(e.target.value)}
+        className="border p-2 rounded mb-4 text-black"
+        placeholder="your name"
+      />
+
+      <br/>
+
+      <button
+        className="bg-[#1f7a5a] text-white px-4 py-2 rounded-lg font-bold shadow-md hover:scale-105 transition"
+        onClick={() => {
+
+          if(!username) return
+
+          saveScore(username, score)
+
+          // reset board
+    let newBoard = createEmptyBoard()
+
+    newBoard = addRandomTile(newBoard)
+    newBoard = addRandomTile(newBoard)
+
+    setBoard(newBoard)
+    setScore(0)
+    setGameOver(false)
+
+
+          setUsername("")
+          setShowUsernameInput(false)
+
+        }}
+      >
+        Submit
+      </button>
+
+    </div>
+
+  </div>
+
+)}
 </main>
 
 )
