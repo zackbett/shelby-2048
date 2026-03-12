@@ -2,13 +2,34 @@
 
 import { useState, useEffect } from "react"
 
+const themes = {
+
+  mode1: {
+    page: "bg-[#5b1f2b]",
+    board: "bg-[#e6b39a]",
+    text: "text-[#ffb199]"
+  },
+
+  mode2: {
+    page: "bg-[#ffd6e7]",
+    board: "bg-[#e46aa9]",
+    text: "text-[#3b1f1a]"
+  },
+
+  mode3: {
+    page: "bg-[#4b0f63]",
+    board: "bg-[#cfa6f4]",
+    text: "text-[#ffdfff]"
+  }
+
+}
+
 function createEmptyBoard() {
-  return Array(4)
-    .fill(null)
-    .map(() => Array(4).fill(0))
+  return Array(4).fill(null).map(() => Array(4).fill(0))
 }
 
 function addRandomTile(board: number[][]) {
+
   const empty: [number, number][] = []
 
   board.forEach((row, r) =>
@@ -20,106 +41,236 @@ function addRandomTile(board: number[][]) {
   if (empty.length === 0) return board
 
   const [r, c] = empty[Math.floor(Math.random() * empty.length)]
+
   board[r][c] = Math.random() < 0.9 ? 2 : 4
 
   return [...board]
 }
+
 function slide(row: number[]) {
+
   const arr = row.filter((num) => num)
   const missing = 4 - arr.length
   const zeros = Array(missing).fill(0)
+
   return [...arr, ...zeros]
+
 }
 
-function combine(row: number[]) {
+function combine(row: number[], addScore: (v: number) => void) {
+
   for (let i = 0; i < 3; i++) {
+
     if (row[i] !== 0 && row[i] === row[i + 1]) {
+
       row[i] *= 2
       row[i + 1] = 0
+
+      addScore(row[i])
+
     }
+
   }
+
   return row
 }
 
 export default function Home() {
+
   const [board, setBoard] = useState<number[][]>(createEmptyBoard())
+  const [score, setScore] = useState(0)
+  const [bestScore, setBestScore] = useState(0)
+  const [gameOver, setGameOver] = useState(false)
 
-  const [touchStart, setTouchStart] = useState<number | null>(null)
-  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const [theme, setTheme] = useState<"mode1" | "mode2" | "mode3">("mode1")
 
-  const [touchStartY, setTouchStartY] = useState<number | null>(null)
-  const [touchEndY, setTouchEndY] = useState<number | null>(null)
-useEffect(() => {
+  const currentTheme = themes[theme]
 
-  let newBoard = createEmptyBoard()
-  newBoard = addRandomTile(newBoard)
-  newBoard = addRandomTile(newBoard)
-
-  setBoard(newBoard)
-
-}, [])
   useEffect(() => {
 
-  const handleKey = (e: any) => {
+    let newBoard = createEmptyBoard()
 
-    if (e.key === "ArrowLeft") moveLeft()
-    if (e.key === "ArrowRight") moveRight()
-    if (e.key === "ArrowUp") moveUp()
-    if (e.key === "ArrowDown") moveDown()
+    newBoard = addRandomTile(newBoard)
+    newBoard = addRandomTile(newBoard)
+
+    setBoard(newBoard)
+
+    const saved = localStorage.getItem("bestScore")
+
+    if (saved) setBestScore(parseInt(saved))
+
+  }, [])
+
+  useEffect(() => {
+
+    if (score > bestScore) {
+
+      setBestScore(score)
+      localStorage.setItem("bestScore", score.toString())
+
+    }
+
+  }, [score])
+
+  useEffect(() => {
+
+    const handleKey = (e: any) => {
+
+      if (e.key === "ArrowLeft") moveLeft()
+      if (e.key === "ArrowRight") moveRight()
+      if (e.key === "ArrowUp") moveUp()
+      if (e.key === "ArrowDown") moveDown()
+
+    }
+
+    window.addEventListener("keydown", handleKey)
+
+    return () => window.removeEventListener("keydown", handleKey)
+
+  }, [board])
+
+  function addScore(v: number) {
+    setScore((p) => p + v)
+  }
+
+  function checkGameOver(board: number[][]) {
+
+    for (let r = 0; r < 4; r++) {
+
+      for (let c = 0; c < 4; c++) {
+
+        if (board[r][c] === 0) return false
+
+        if (c < 3 && board[r][c] === board[r][c + 1]) return false
+
+        if (r < 3 && board[r][c] === board[r + 1][c]) return false
+
+      }
+
+    }
+
+    return true
 
   }
 
-  window.addEventListener("keydown", handleKey)
+function getTileColor(num: number) {
 
-  return () => {
-    window.removeEventListener("keydown", handleKey)
+  if (num === 0) return "bg-black/70"
+
+  if (theme === "mode1") {
+
+    const colors:any = {
+
+      2: "bg-[#fff4e6]",
+      4: "bg-[#ffe0cc]",
+      8: "bg-[#ffc299]",
+      16: "bg-[#ffa366]",
+      32: "bg-[#ff704d]",
+      64: "bg-[#ff4d4d]"
+
+    }
+
+    return colors[num] || "bg-[#ffcc66]"
+
   }
 
-}, [board])
-const minSwipeDistance = 50
+  if (theme === "mode2") {
 
-function handleTouchStart(e: any) {
-  setTouchEnd(null)
-  setTouchStart(e.targetTouches[0].clientX)
-  setTouchStartY(e.targetTouches[0].clientY)
+    const colors:any = {
+
+      2: "bg-[#fff0f5]",
+      4: "bg-[#ffd1dc]",
+      8: "bg-[#ffb3c6]",
+      16: "bg-[#ff94b7]",
+      32: "bg-[#ff75a8]",
+      64: "bg-[#ff5799]"
+
+    }
+
+    return colors[num] || "bg-[#ffb347]"
+
+  }
+
+  if (theme === "mode3") {
+
+    const colors:any = {
+
+      2: "bg-[#f3e8ff]",
+      4: "bg-[#e9d5ff]",
+      8: "bg-[#d8b4fe]",
+      16: "bg-[#c084fc]",
+      32: "bg-[#a855f7]",
+      64: "bg-[#9333ea]"
+
+    }
+
+    return colors[num] || "bg-[#7c3aed]"
+
+  }
+
 }
 
-function handleTouchMove(e: any) {
-  setTouchEnd(e.targetTouches[0].clientX)
-  setTouchEndY(e.targetTouches[0].clientY)
+function handleTouchStart(e:any){
+
+  e.preventDefault()
+  setTouchStart(e.touches[0].clientX)
+  setTouchStartY(e.touches[0].clientY)
+
 }
 
-function handleTouchEnd() {
+function handleTouchMove(e:any){
 
-  if (!touchStart || !touchEnd || !touchStartY || !touchEndY) return
+  e.preventDefault()
+  setTouchEnd(e.touches[0].clientX)
+  setTouchEndY(e.touches[0].clientY)
 
-  const distanceX = touchStart - touchEnd
-  const distanceY = touchStartY - touchEndY
-
-  const isLeft = distanceX > minSwipeDistance
-  const isRight = distanceX < -minSwipeDistance
-  const isUp = distanceY > minSwipeDistance
-  const isDown = distanceY < -minSwipeDistance
-
-  if (isLeft) moveLeft()
-  if (isRight) moveRight()
-  if (isUp) moveUp()
-  if (isDown) moveDown()
 }
+
+function handleTouchEnd(){
+
+  if(!touchStart || !touchEnd || !touchStartY || !touchEndY) return
+
+  const dx = touchStart - touchEnd
+  const dy = touchStartY - touchEndY
+
+  if(Math.abs(dx) > Math.abs(dy)){
+
+    if(dx > 30) moveLeft()
+    else moveRight()
+
+  }else{
+
+    if(dy > 30) moveUp()
+    else moveDown()
+
+  }
+
+}
+
+const [touchStart,setTouchStart] = useState<number | null>(null)
+const [touchEnd,setTouchEnd] = useState<number | null>(null)
+
+const [touchStartY,setTouchStartY] = useState<number | null>(null)
+const [touchEndY,setTouchEndY] = useState<number | null>(null)
+
 function moveLeft() {
 
   let newBoard = board.map((row) => {
 
     let newRow = slide(row)
-    newRow = combine(newRow)
+    newRow = combine(newRow, addScore)
     newRow = slide(newRow)
 
     return newRow
+
   })
 
   newBoard = addRandomTile(newBoard)
 
   setBoard(newBoard)
+
+  if (checkGameOver(newBoard)) setGameOver(true)
+
 }
 
 function moveRight() {
@@ -129,15 +280,19 @@ function moveRight() {
     let reversed = [...row].reverse()
 
     reversed = slide(reversed)
-    reversed = combine(reversed)
+    reversed = combine(reversed, addScore)
     reversed = slide(reversed)
 
     return reversed.reverse()
+
   })
 
   newBoard = addRandomTile(newBoard)
 
   setBoard(newBoard)
+
+  if (checkGameOver(newBoard)) setGameOver(true)
+
 }
 
 function moveUp() {
@@ -147,24 +302,28 @@ function moveUp() {
   for (let col = 0; col < 4; col++) {
 
     let column = [
+
       newBoard[0][col],
       newBoard[1][col],
       newBoard[2][col],
       newBoard[3][col]
+
     ]
 
     column = slide(column)
-    column = combine(column)
+    column = combine(column, addScore)
     column = slide(column)
 
-    for (let row = 0; row < 4; row++) {
-      newBoard[row][col] = column[row]
-    }
+    for (let row = 0; row < 4; row++) newBoard[row][col] = column[row]
+
   }
 
   newBoard = addRandomTile(newBoard)
 
   setBoard([...newBoard])
+
+  if (checkGameOver(newBoard)) setGameOver(true)
+
 }
 
 function moveDown() {
@@ -174,66 +333,159 @@ function moveDown() {
   for (let col = 0; col < 4; col++) {
 
     let column = [
+
       newBoard[0][col],
       newBoard[1][col],
       newBoard[2][col],
       newBoard[3][col]
+
     ].reverse()
 
     column = slide(column)
-    column = combine(column)
+    column = combine(column, addScore)
     column = slide(column)
 
     column = column.reverse()
 
-    for (let row = 0; row < 4; row++) {
-      newBoard[row][col] = column[row]
-    }
+    for (let row = 0; row < 4; row++) newBoard[row][col] = column[row]
+
   }
 
   newBoard = addRandomTile(newBoard)
 
   setBoard([...newBoard])
+
+  if (checkGameOver(newBoard)) setGameOver(true)
+
 }
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-black text-white touch-none">
 
-      <h1 className="text-4xl font-bold mb-6">Shelby 2048</h1>
+return (
 
-      <div className="bg-neutral-900 p-4 rounded-xl">
+<main className={`min-h-screen flex flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}>
 
-        <div
-          className="grid grid-cols-4 gap-2 w-[320px] h-[320px]"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+<h1 className="text-5xl font-extrabold mb-3 drop-shadow-lg">
+Shelby 2048
+</h1>
+
+<div className="flex gap-2 mb-4">
+
+<button
+onClick={()=>setTheme("mode1")}
+className="w-5 h-5 bg-[#3b0f19] shadow-md active:translate-y-[2px]"
+/>
+
+<button
+onClick={()=>setTheme("mode2")}
+className="w-5 h-5 bg-[#e46aa9] shadow-md active:translate-y-[2px]"
+/>
+
+<button
+onClick={()=>setTheme("mode3")}
+className="w-5 h-5 bg-[#7c3aed] shadow-md active:translate-y-[2px]"
+/>
+
+</div>
+
+<div className="text-lg font-bold mb-4">
+Score: {score} | Best: {bestScore}
+</div>
+
+<div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-black/40`}>
+
+<div
+className="grid grid-cols-4 gap-2 w-[320px] h-[320px] touch-none"
+onTouchStart={handleTouchStart}
+onTouchMove={handleTouchMove}
+onTouchEnd={handleTouchEnd}
 >
 
-          {board.flat().map((num, i) => (
-            <div
-              key={i}
-              className="bg-neutral-700 rounded flex items-center justify-center text-xl font-bold aspect-square"
-            >
-              {num !== 0 ? num : ""}
-            </div>
-          ))}
+{board.flat().map((num,i)=>(
 
-        </div>
+<div
+key={i}
+className={`flex items-center justify-center aspect-square rounded-lg text-black text-2xl font-black tracking-tight drop-shadow shadow-inner transition-all duration-150 ${getTileColor(num)}`}
+>
 
-      </div>
+{num !== 0 ? num : ""}
 
-      <button
-        className="mt-6 bg-white text-black px-4 py-2 rounded"
-        onClick={() => {
-          let newBoard = createEmptyBoard()
-          newBoard = addRandomTile(newBoard)
-          newBoard = addRandomTile(newBoard)
-          setBoard(newBoard)
-        }}
-      >
-        New Game
-      </button>
+</div>
 
-    </main>
-  )
+))}
+
+</div>
+
+</div>
+
+<button
+className={`mt-6 px-6 py-2 rounded-lg font-bold shadow-lg ${currentTheme.board}`}
+style={{color:"black"}}
+onClick={()=>{
+
+let newBoard = createEmptyBoard()
+
+newBoard = addRandomTile(newBoard)
+newBoard = addRandomTile(newBoard)
+
+setBoard(newBoard)
+setScore(0)
+setGameOver(false)
+
+}}
+>
+New Game
+</button>
+
+{gameOver && (
+
+<div className="fixed inset-0 flex items-center justify-center bg-black/70">
+
+<div className={`${currentTheme.board} p-8 rounded-xl text-center shadow-2xl`}>
+
+<h2 className="text-3xl font-bold text-black mb-4">
+Game Over
+</h2>
+
+<p className="mb-4 text-black">
+Score: {score}
+</p>
+
+<div className="flex gap-4 justify-center">
+
+<button
+className="bg-black text-white px-4 py-2 rounded-lg"
+onClick={()=>{
+
+let newBoard = createEmptyBoard()
+
+newBoard = addRandomTile(newBoard)
+newBoard = addRandomTile(newBoard)
+
+setBoard(newBoard)
+setScore(0)
+setGameOver(false)
+
+}}
+>
+Start Over
+</button>
+
+<button
+className="bg-black text-white px-4 py-2 rounded-lg"
+onClick={()=>console.log("submit anw",score)}
+>
+Submit anw
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+)}
+
+</main>
+
+)
+
 }
