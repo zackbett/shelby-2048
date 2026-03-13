@@ -1,8 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { saveScore } from "@/lib/leaderboard"
+import Leaderboard from "../components/Leaderboard"
 
+type Player = {
+  username: string
+  score: number
+}
 const themes = {
   mode1: {
     page: "bg-[#5b1f2b]",
@@ -80,7 +84,11 @@ function slide(row: number[]) {
 
 }
 
-function combine(row: number[], addScore: (v: number) => void) {
+function combine(
+  row: number[],
+  addScore: (v: number) => void,
+  playMerge: () => void
+) {
 
   for (let i = 0; i < 3; i++) {
 
@@ -90,6 +98,7 @@ function combine(row: number[], addScore: (v: number) => void) {
       row[i + 1] = 0
 
       addScore(row[i])
+      playMerge()
 
 
 }
@@ -101,9 +110,37 @@ function combine(row: number[], addScore: (v: number) => void) {
 
 export default function Home() {
 
+  const playMerge = () => {
+  if (mergeSoundRef.current) {
+    mergeSoundRef.current.currentTime = 0
+    mergeSoundRef.current.play().catch(() => {})
+  }
+}
+
   const [board, setBoard] = useState<number[][]>(createEmptyBoard())
   const [score, setScore] = useState(0)
   const [bestScore, setBestScore] = useState(0)
+  const [leaderboard, setLeaderboard] = useState<Player[]>([
+  { username: "majyy", score: 4096 },
+  { username: "teye", score: 2048 },
+  { username: "sukiman", score: 1024 }
+])
+function submitScore(username: string, score: number) {
+
+  const updated: Player[] = [...leaderboard]
+
+  updated.push({
+    username,
+    score
+  })
+
+  updated.sort((a,b)=> b.score - a.score)
+
+  const top10 = updated.slice(0,10)
+
+  setLeaderboard(top10)
+
+}
   const [gameOver, setGameOver] = useState(false)
   
   const bgMusicRef = useRef<HTMLAudioElement | null>(null)
@@ -169,14 +206,17 @@ bgMusicRef.current?.pause()
 
   useEffect(() => {
 
-    const handleKey = (e: any) => {
+    const handleKey = (e: KeyboardEvent) => {
 
-      if (e.key === "ArrowLeft") moveLeft()
-      if (e.key === "ArrowRight") moveRight()
-      if (e.key === "ArrowUp") moveUp()
-      if (e.key === "ArrowDown") moveDown()
+  if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)) {
+    e.preventDefault()
+  }
 
-    }
+  if (e.key === "ArrowLeft") moveLeft()
+  if (e.key === "ArrowRight") moveRight()
+  if (e.key === "ArrowUp") moveUp()
+  if (e.key === "ArrowDown") moveDown()
+}
 
     window.addEventListener("keydown", handleKey)
 
@@ -313,7 +353,7 @@ function moveLeft() {
   let newBoard = board.map((row) => {
 
     let newRow = slide(row)
-    newRow = combine(newRow, addScore)
+    newRow = combine(row, addScore, playMerge)
     newRow = slide(newRow)
 
     return newRow
@@ -335,7 +375,7 @@ function moveRight() {
     let reversed = [...row].reverse()
 
     reversed = slide(reversed)
-    reversed = combine(reversed, addScore)
+    reversed = combine(reversed, addScore, playMerge)
     reversed = slide(reversed)
 
     return reversed.reverse()
@@ -366,7 +406,7 @@ function moveUp() {
     ]
 
     column = slide(column)
-    column = combine(column, addScore)
+    column = combine(column, addScore, playMerge)
     column = slide(column)
 
     for (let row = 0; row < 4; row++) newBoard[row][col] = column[row]
@@ -406,7 +446,7 @@ function moveDown() {
     ].reverse()
 
     column = slide(column)
-    column = combine(column, addScore)
+    column = combine(column, addScore, playMerge)
     column = slide(column)
 
     column = column.reverse()
@@ -426,10 +466,10 @@ function moveDown() {
 return (
 
 <main
-  className={`relative flex min-h-screen flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}
+  className={`relative flex min-h-screen flex-col items-center justify-center pt-8 ${currentTheme.page} ${currentTheme.text}`}
 >
   <div
-className="absolute top-6 right-6 cursor-pointer z-50"
+className="absolute top-3 right-3 md:top-6 md:right-6 cursor-pointer z-50"
 onClick={() => setSoundOn(!soundOn)}
 >
 
@@ -459,9 +499,9 @@ src="/assets/sounds/bg-music.mp3"
 loop
 />
 <audio
-ref={mergeSoundRef}
-src="/sounds/tile-merge.mp3"
-preload="auto"
+  ref={mergeSoundRef}
+  src="/assets/sounds/tile-merge.mp3"
+  preload="auto"
 />
 
   {showWinPopup && (
@@ -593,10 +633,10 @@ style={{ color: currentTheme.scoreValue }}
 </div>
 
 </div>
-<div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-black/40`}>
+<div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-md`}>
 
 <div
-className="grid grid-cols-4 gap-2 w-[320px] h-[320px] touch-none"
+className="grid grid-cols-4 gap-2 w-[320px] h-[320px] touch-none select-none"
 onTouchStart={handleTouchStart}
 onTouchMove={handleTouchMove}
 onTouchEnd={handleTouchEnd}
@@ -637,7 +677,7 @@ setGameOver(false)
 >
 New Game
 </button>
-
+<Leaderboard data={leaderboard} />
 {gameOver && (
 
 <div className="fixed inset-0 flex items-center justify-center bg-black/70">
@@ -737,7 +777,7 @@ Submit anw
 
           if(!username) return
 
-          saveScore(username, score)
+          submitScore(username, score)
 
           // reset board
     let newBoard = createEmptyBoard()

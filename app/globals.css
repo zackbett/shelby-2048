@@ -73,3 +73,6 @@ filter: saturate(200%) hue-rotate(260deg);
     opacity: 0.5;
   }
 }
+* {
+  -webkit-tap-highlight-color: transparent;
+}
