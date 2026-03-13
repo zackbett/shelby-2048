@@ -72,7 +72,7 @@ function combine(row: number[], addScore: (v: number) => void) {
 
       addScore(row[i])
 
-    }
+}
 
   }
 
@@ -85,6 +85,8 @@ export default function Home() {
   const [score, setScore] = useState(0)
   const [bestScore, setBestScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
+  const [showWinPopup, setShowWinPopup] = useState(false)
+  const [hasReached2048, setHasReached2048] = useState(false)
 
   const [showUsernameInput, setShowUsernameInput] = useState(false)
   const [username, setUsername] = useState("")
@@ -328,6 +330,15 @@ function moveUp() {
   newBoard = addRandomTile(newBoard)
 
   setBoard([...newBoard])
+  
+  const reached2048 = newBoard.some(row =>
+  row.some(tile => tile === 2048)
+)
+
+if (reached2048 && !hasReached2048) {
+  setHasReached2048(true)
+  setShowWinPopup(true)
+}
 
   if (checkGameOver(newBoard)) setGameOver(true)
 
@@ -371,6 +382,46 @@ return (
 <main
   className={`relative flex min-h-screen flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}
 >
+  {showWinPopup && (
+
+<div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+
+  <div className="bg-[#f5e1c8] p-6 rounded-xl text-center shadow-2xl w-[300px]">
+
+    <h2 className="text-2xl font-bold mb-2 text-[#5b1f2b]">
+      GGs Goat 🐐
+    </h2>
+
+    <p className="mb-6 text-[#5b1f2b]">
+      You reached 2048!
+    </p>
+
+    <div className="flex flex-col gap-3">
+
+      <button
+        className="bg-[#5b1f2b] text-white py-2 rounded-lg shadow-md hover:scale-105 transition"
+        onClick={() => setShowWinPopup(false)}
+      >
+        Continue
+      </button>
+
+      <button
+        className="bg-[#e6b3a9] text-[#5b1f2b] py-2 rounded-lg shadow-md hover:scale-105 transition"
+        onClick={() => {
+          setShowWinPopup(false)
+          setShowUsernameInput(true)
+        }}
+      >
+        Submit, bye.
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+)}
 <div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24">
   <div className={`shelby-pattern ${currentTheme.pattern}`} />
 
