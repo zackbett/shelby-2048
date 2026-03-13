@@ -29,3 +29,26 @@ export async function saveScore(username: string, score: number) {
 
   return data
 }
+export async function getLeaderboard() {
+
+  const payload = {
+    jsonrpc: "2.0",
+    id: 1,
+    method: "listBlobs",
+    params: {}
+  }
+
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  })
+
+  const data = await res.json()
+
+  console.log("leaderboard raw:", data)
+
+  return data
+}

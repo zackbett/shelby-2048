@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Leaderboard from "../components/Leaderboard"
-
+import { saveScore } from "@/lib/shelby"
 type Player = {
   username: string
   score: number
