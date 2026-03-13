@@ -7,23 +7,44 @@ const themes = {
 
 mode1: {
 page: "bg-[#5b1f2b]",
+pageColor: "#5b1f2b",
 board: "bg-[#e6b39a]",
 text: "text-[#ffb199]",
-pattern: "pattern-mode1"
+pattern: "pattern-mode1",
+
+container: "#f5e0c8",
+border: "#c97b63",
+
+scoreLabel: "#5b1f2b",
+scoreValue: "#d86c2e"
 },
 
 mode2: {
 page: "bg-[#ffd6e7]",
+pageColor: "#ffd6e7",
 board: "bg-[#e46aa9]",
-text: "text-[#3b1f1a]",
-pattern: "pattern-mode2"
+text: "text-[#3b1f3a]",
+pattern: "pattern-mode2",
+
+container: "#e46aa9",
+border: "#ff8ec6",
+
+scoreLabel: "#5b1f2b",
+scoreValue: "#ff1493"
 },
 
 mode3: {
 page: "bg-[#4b0f63]",
+pageColor: "#4b0f63",
 board: "bg-[#cfa6f4]",
 text: "text-[#fdf1ff]",
-pattern: "pattern-mode3"
+pattern: "pattern-mode3",
+
+container: "#f3e5ff",
+border: "#9a6bff",
+
+scoreLabel: "#3a0f52",
+scoreValue: "#6f3cff"
 }
 
 }
@@ -407,7 +428,7 @@ function moveDown() {
 return (
 
 <main
-  className={`relative flex min-h-screen flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}
+  className={`relative flex min-h-screen flex-col items-center justify-center z-0 ${currentTheme.page} ${currentTheme.text}`}
 >
   <div
 className="absolute top-6 right-6 cursor-pointer z-50"
@@ -484,15 +505,10 @@ src="/assets/sounds/tile-merge.mp3"
 </div>
 
 )}
-<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24">
+<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24 z-0">
   <div className={`shelby-pattern ${currentTheme.pattern}`} />
-
 </div>
-<h1 className="text-5xl font-extrabold mb-3 drop-shadow-lg">
-Shelby 2048
-</h1>
-
-<div className="flex gap-2 mb-4">
+  <div className="flex gap-2 mb-4">
 
 <button
 onClick={()=>setTheme("mode1")}
@@ -510,9 +526,75 @@ className="w-5 h-5 bg-[#7c3aed] shadow-md active:translate-y-[2px]"
 />
 
 </div>
+<div
+className="px-12 py-4 rounded-2xl border-4 shadow-[0_8px_20px_rgba(0,0,0,0.25)] mb-1"
+style={{
+background: currentTheme.container,
+borderColor: currentTheme.border
+}}
+>
 
-<div className="text-lg font-bold mb-4">
-Score: {score} | Best: {bestScore}
+<h1
+className="text-4xl font-extrabold text-center tracking-wide"
+style={{ color: currentTheme.pageColor }}
+>
+Shelby 2048
+</h1>
+
+</div>
+
+
+<div
+className="flex items-center justify-center gap-8 my-8 px-8 py-4 rounded-md border-4 shadow-md"
+style={{
+background: currentTheme.container,
+borderColor: currentTheme.border
+}}
+>
+
+<div className="flex flex-col items-center">
+
+<span
+className="text-sm font-extrabold"
+style={{ color: currentTheme.scoreLabel }}
+>
+Score
+</span>
+
+<span
+className="text-2xl font-extrabold"
+style={{ color: currentTheme.scoreValue }}
+>
+{score}
+</span>
+
+</div>
+
+<div
+className="w-[3px] h-10 shadow-inner"
+style={{
+background: currentTheme.border
+}}
+></div>
+
+<div className="flex flex-col items-center">
+
+<span
+className="text-sm font-extrabold"
+style={{ color: currentTheme.scoreLabel }}
+>
+Best
+</span>
+
+<span
+className="text-2xl font-extrabold"
+style={{ color: currentTheme.scoreValue }}
+>
+{bestScore}
+</span>
+
+</div>
+
 </div>
 
 <div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-black/40`}>
