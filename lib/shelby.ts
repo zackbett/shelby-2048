@@ -1,4 +1,4 @@
-const RPC_URL = "https://rpc.shelbynet.xyz"
+const RPC_URL = "/api/shelby"
 
 export async function saveScore(username: string, score: number) {
 
@@ -46,7 +46,18 @@ export async function getLeaderboard() {
     body: JSON.stringify(payload)
   })
 
-  const data = await res.json()
+  const text = await res.text()
+
+if (!text) {
+  console.log("no leaderboard data yet")
+  return []
+}
+
+const data = JSON.parse(text)
+
+console.log("leaderboard raw:", data)
+
+return data
 
   console.log("leaderboard raw:", data)
 

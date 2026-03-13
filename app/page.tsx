@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { saveScore, getLeaderboard } from "@/lib/shelby"
 import Leaderboard from "../components/Leaderboard"
-import { saveScore } from "@/lib/shelby"
+
 type Player = {
   username: string
   score: number
@@ -121,9 +122,7 @@ export default function Home() {
   const [score, setScore] = useState(0)
   const [bestScore, setBestScore] = useState(0)
   const [leaderboard, setLeaderboard] = useState<Player[]>([
-  { username: "majyy", score: 4096 },
-  { username: "teye", score: 2048 },
-  { username: "sukiman", score: 1024 }
+  
 ])
 function submitScore(username: string, score: number) {
 
@@ -182,6 +181,31 @@ function submitScore(username: string, score: number) {
     }
 
   }, [score])
+
+  useEffect(() => {
+
+  async function loadLeaderboard() {
+    const res = await getLeaderboard()
+
+    if (!res?.result) return
+
+    const players = res.result.map((blob: any) => {
+      const data = JSON.parse(blob.data)
+
+      return {
+        username: data.username,
+        score: data.score
+      }
+    })
+
+    players.sort((a: any, b: any) => b.score - a.score)
+
+    setLeaderboard(players.slice(0, 10))
+  }
+
+  loadLeaderboard()
+
+}, [])
 
   useEffect(() => {
 
