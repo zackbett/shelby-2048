@@ -1,7 +1,7 @@
 # Shelby 2048 — Decentralized Leaderboard Experiment
 
 <p align="center">
-  <img src="public/Shelby-banner.png" width="900">
+  <img src="public/assets/Shelby-banner.png" width="900">
 </p>
 
 🎮 **Live Demo**  
