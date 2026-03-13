@@ -1,52 +1,54 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { saveScore } from "@/lib/shelby"
+import Leaderboard from "../components/Leaderboard"
 
-const themes = {
-
-mode1: {
-page: "bg-[#5b1f2b]",
-pageColor: "#5b1f2b",
-board: "bg-[#e6b39a]",
-text: "text-[#ffb199]",
-pattern: "pattern-mode1",
-
-container: "#f5e0c8",
-border: "#c97b63",
-
-scoreLabel: "#5b1f2b",
-scoreValue: "#d86c2e"
-},
-
-mode2: {
-page: "bg-[#ffd6e7]",
-pageColor: "#ffd6e7",
-board: "bg-[#e46aa9]",
-text: "text-[#3b1f3a]",
-pattern: "pattern-mode2",
-
-container: "#e46aa9",
-border: "#ff8ec6",
-
-scoreLabel: "#5b1f2b",
-scoreValue: "#ff1493"
-},
-
-mode3: {
-page: "bg-[#4b0f63]",
-pageColor: "#4b0f63",
-board: "bg-[#cfa6f4]",
-text: "text-[#fdf1ff]",
-pattern: "pattern-mode3",
-
-container: "#f3e5ff",
-border: "#9a6bff",
-
-scoreLabel: "#3a0f52",
-scoreValue: "#6f3cff"
+type Player = {
+  username: string
+  score: number
 }
+const themes = {
+  mode1: {
+    page: "bg-[#5b1f2b]",
+    pageColor: "#5b1f2b",
+    board: "bg-[#e6b39a]",
+    text: "text-[#ffb199]",
+    pattern: "pattern-mode1",
 
+    container: "#f5e0c8",
+    border: "#c97b63",
+
+    scoreLabel: "#5b1f2b",
+    scoreValue: "#c76b39"
+  },
+
+  mode2: {
+    page: "bg-[#ffd6e7]",
+    pageColor: "#ffd6e7",
+    board: "bg-[#e46aa9]",
+    text: "text-[#3b1f3a]",
+    pattern: "pattern-mode2",
+
+    container: "#e46aa9",
+    border: "#ff8ec6",
+
+    scoreLabel: "#6b1b3a",
+    scoreValue: "#ff2f92"
+  },
+
+  mode3: {
+    page: "bg-[#4b0f63]",
+    pageColor: "#4b0f63",
+    board: "bg-[#cfa6f4]",
+    text: "text-[#fdf1ff]",
+    pattern: "pattern-mode3",
+
+    container: "#f3e5ff",
+    border: "#9a6bff",
+
+    scoreLabel: "#4b0f63",
+    scoreValue: "#7a5cff"
+  }
 }
 
 function createEmptyBoard() {
@@ -82,7 +84,11 @@ function slide(row: number[]) {
 
 }
 
-function combine(row: number[], addScore: (v: number) => void) {
+function combine(
+  row: number[],
+  addScore: (v: number) => void,
+  playMerge: () => void
+) {
 
   for (let i = 0; i < 3; i++) {
 
@@ -92,6 +98,7 @@ function combine(row: number[], addScore: (v: number) => void) {
       row[i + 1] = 0
 
       addScore(row[i])
+      playMerge()
 
 
 }
@@ -103,9 +110,37 @@ function combine(row: number[], addScore: (v: number) => void) {
 
 export default function Home() {
 
+  const playMerge = () => {
+  if (mergeSoundRef.current) {
+    mergeSoundRef.current.currentTime = 0
+    mergeSoundRef.current.play().catch(() => {})
+  }
+}
+
   const [board, setBoard] = useState<number[][]>(createEmptyBoard())
   const [score, setScore] = useState(0)
   const [bestScore, setBestScore] = useState(0)
+  const [leaderboard, setLeaderboard] = useState<Player[]>([
+  { username: "majyy", score: 4096 },
+  { username: "teye", score: 2048 },
+  { username: "sukiman", score: 1024 }
+])
+function submitScore(username: string, score: number) {
+
+  const updated: Player[] = [...leaderboard]
+
+  updated.push({
+    username,
+    score
+  })
+
+  updated.sort((a,b)=> b.score - a.score)
+
+  const top10 = updated.slice(0,10)
+
+  setLeaderboard(top10)
+
+}
   const [gameOver, setGameOver] = useState(false)
   
   const bgMusicRef = useRef<HTMLAudioElement | null>(null)
@@ -121,12 +156,6 @@ export default function Home() {
   const [theme, setTheme] = useState<"mode1" | "mode2" | "mode3">("mode1")
 
   const currentTheme = themes[theme]
-
-  useEffect(() => {
-if (mergeSoundRef.current) {
-mergeSoundRef.current.load()
-}
-}, [])
 
   useEffect(() => {
 
@@ -156,35 +185,41 @@ mergeSoundRef.current.load()
 
   useEffect(() => {
 
-if (soundOn && mergeSoundRef.current) {
-const audio = mergeSoundRef.current
-audio.pause()
-audio.currentTime = 0
-audio.play()
+if(soundOn && mergeSoundRef.current){
+
+mergeSoundRef.current.currentTime = 0
+mergeSoundRef.current.play().catch(() => {})
+
 }
 
 }, [score])
 
   useEffect(() => {
 
-if(soundOn){
-bgMusicRef.current?.play().catch(() => {})
-}else{
-bgMusicRef.current?.pause()
-}
+  const audio = bgMusicRef.current
+  if(!audio) return
+
+  if(soundOn){
+    audio.play().catch(() => {})
+  }else{
+    audio.pause()
+  }
 
 }, [soundOn])
 
   useEffect(() => {
 
-    const handleKey = (e: any) => {
+    const handleKey = (e: KeyboardEvent) => {
 
-      if (e.key === "ArrowLeft") moveLeft()
-      if (e.key === "ArrowRight") moveRight()
-      if (e.key === "ArrowUp") moveUp()
-      if (e.key === "ArrowDown") moveDown()
+  if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)) {
+    e.preventDefault()
+  }
 
-    }
+  if (e.key === "ArrowLeft") moveLeft()
+  if (e.key === "ArrowRight") moveRight()
+  if (e.key === "ArrowUp") moveUp()
+  if (e.key === "ArrowDown") moveDown()
+}
 
     window.addEventListener("keydown", handleKey)
 
@@ -321,7 +356,7 @@ function moveLeft() {
   let newBoard = board.map((row) => {
 
     let newRow = slide(row)
-    newRow = combine(newRow, addScore)
+    newRow = combine(row, addScore, playMerge)
     newRow = slide(newRow)
 
     return newRow
@@ -343,7 +378,7 @@ function moveRight() {
     let reversed = [...row].reverse()
 
     reversed = slide(reversed)
-    reversed = combine(reversed, addScore)
+    reversed = combine(reversed, addScore, playMerge)
     reversed = slide(reversed)
 
     return reversed.reverse()
@@ -374,7 +409,7 @@ function moveUp() {
     ]
 
     column = slide(column)
-    column = combine(column, addScore)
+    column = combine(column, addScore, playMerge)
     column = slide(column)
 
     for (let row = 0; row < 4; row++) newBoard[row][col] = column[row]
@@ -414,7 +449,7 @@ function moveDown() {
     ].reverse()
 
     column = slide(column)
-    column = combine(column, addScore)
+    column = combine(column, addScore, playMerge)
     column = slide(column)
 
     column = column.reverse()
@@ -434,10 +469,10 @@ function moveDown() {
 return (
 
 <main
-  className={`relative flex min-h-screen flex-col items-center justify-center z-0 ${currentTheme.page} ${currentTheme.text}`}
+  className={`relative flex min-h-screen flex-col items-center justify-center pt-8 ${currentTheme.page} ${currentTheme.text}`}
 >
   <div
-className="absolute top-6 right-6 cursor-pointer z-50"
+className="absolute top-3 right-3 md:top-6 md:right-6 cursor-pointer z-50"
 onClick={() => setSoundOn(!soundOn)}
 >
 
@@ -466,10 +501,12 @@ ref={bgMusicRef}
 src="/assets/sounds/bg-music.mp3"
 loop
 />
+<audio
+  ref={mergeSoundRef}
+  src="/assets/sounds/tile-merge.mp3"
+  preload="auto"
+/>
 
-<audio ref={mergeSoundRef} preload="auto">
-  <source src="/sounds/tile-merge.mp3" type="audio/mpeg" />
-</audio>
   {showWinPopup && (
 
 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
@@ -510,7 +547,7 @@ loop
 </div>
 
 )}
-<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24 z-0">
+<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24">
   <div className={`shelby-pattern ${currentTheme.pattern}`} />
 </div>
   <div className="flex gap-2 mb-4">
@@ -532,7 +569,7 @@ className="w-5 h-5 bg-[#7c3aed] shadow-md active:translate-y-[2px]"
 
 </div>
 <div
-className="px-12 py-4 rounded-2xl border-4 shadow-[0_8px_20px_rgba(0,0,0,0.25)] mb-1"
+className="px-12 py-4 rounded-2xl border-4 shadow-[0_8px_20px_rgba(0,0,0,0.25)] mb-5"
 style={{
 background: currentTheme.container,
 borderColor: currentTheme.border
@@ -550,7 +587,7 @@ Shelby 2048
 
 
 <div
-className="flex items-center justify-center gap-8 my-8 px-8 py-4 rounded-md border-4 shadow-md"
+className="flex items-center justify-center gap-8 mb-6 px-8 py-4 rounded-lg border-4 shadow-md"
 style={{
 background: currentTheme.container,
 borderColor: currentTheme.border
@@ -577,9 +614,7 @@ style={{ color: currentTheme.scoreValue }}
 
 <div
 className="w-[3px] h-10 shadow-inner"
-style={{
-background: currentTheme.border
-}}
+style={{ background: currentTheme.border }}
 ></div>
 
 <div className="flex flex-col items-center">
@@ -601,11 +636,10 @@ style={{ color: currentTheme.scoreValue }}
 </div>
 
 </div>
-
-<div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-black/40`}>
+<div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-md`}>
 
 <div
-className="grid grid-cols-4 gap-2 w-[320px] h-[320px] touch-none"
+className="grid grid-cols-4 gap-2 w-[320px] h-[320px] touch-none select-none"
 onTouchStart={handleTouchStart}
 onTouchMove={handleTouchMove}
 onTouchEnd={handleTouchEnd}
@@ -646,7 +680,7 @@ setGameOver(false)
 >
 New Game
 </button>
-
+<Leaderboard data={leaderboard} />
 {gameOver && (
 
 <div className="fixed inset-0 flex items-center justify-center bg-black/70">
@@ -742,14 +776,11 @@ Submit anw
 
       <button
         className="mt-4 bg-[#1f7a5a] text-white px-4 py-2 rounded-lg font-bold shadow-md"
-        onClick={async () => {
+        onClick={() => {
 
-  if (!username) return
+          if(!username) return
 
-  await saveScore(username, score)
-
-  console.log("submit working", username, score)
-
+          submitScore(username, score)
 
           // reset board
     let newBoard = createEmptyBoard()
