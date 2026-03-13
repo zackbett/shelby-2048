@@ -190,13 +190,19 @@ function submitScore(username: string, score: number) {
     if (!res?.result) return
 
     const players = res.result.map((blob: any) => {
-      const data = JSON.parse(blob.data)
+
+      const raw = blob.data || blob.value
+
+      if (!raw) return null
+
+      const data = JSON.parse(raw)
 
       return {
         username: data.username,
         score: data.score
       }
-    })
+
+    }).filter(Boolean)
 
     players.sort((a: any, b: any) => b.score - a.score)
 
