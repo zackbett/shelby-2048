@@ -4,49 +4,47 @@ import { useState, useEffect, useRef } from "react"
 import { saveScore } from "@/lib/leaderboard"
 
 const themes = {
+  mode1: {
+    page: "bg-[#5b1f2b]",
+    pageColor: "#5b1f2b",
+    board: "bg-[#e6b39a]",
+    text: "text-[#ffb199]",
+    pattern: "pattern-mode1",
 
-mode1: {
-page: "bg-[#5b1f2b]",
-pageColor: "#5b1f2b",
-board: "bg-[#e6b39a]",
-text: "text-[#ffb199]",
-pattern: "pattern-mode1",
+    container: "#f5e0c8",
+    border: "#c97b63",
 
-container: "#f5e0c8",
-border: "#c97b63",
+    scoreLabel: "#5b1f2b",
+    scoreValue: "#c76b39"
+  },
 
-scoreLabel: "#5b1f2b",
-scoreValue: "#d86c2e"
-},
+  mode2: {
+    page: "bg-[#ffd6e7]",
+    pageColor: "#ffd6e7",
+    board: "bg-[#e46aa9]",
+    text: "text-[#3b1f3a]",
+    pattern: "pattern-mode2",
 
-mode2: {
-page: "bg-[#ffd6e7]",
-pageColor: "#ffd6e7",
-board: "bg-[#e46aa9]",
-text: "text-[#3b1f3a]",
-pattern: "pattern-mode2",
+    container: "#e46aa9",
+    border: "#ff8ec6",
 
-container: "#e46aa9",
-border: "#ff8ec6",
+    scoreLabel: "#6b1b3a",
+    scoreValue: "#ff2f92"
+  },
 
-scoreLabel: "#5b1f2b",
-scoreValue: "#ff1493"
-},
+  mode3: {
+    page: "bg-[#4b0f63]",
+    pageColor: "#4b0f63",
+    board: "bg-[#cfa6f4]",
+    text: "text-[#fdf1ff]",
+    pattern: "pattern-mode3",
 
-mode3: {
-page: "bg-[#4b0f63]",
-pageColor: "#4b0f63",
-board: "bg-[#cfa6f4]",
-text: "text-[#fdf1ff]",
-pattern: "pattern-mode3",
+    container: "#f3e5ff",
+    border: "#9a6bff",
 
-container: "#f3e5ff",
-border: "#9a6bff",
-
-scoreLabel: "#3a0f52",
-scoreValue: "#6f3cff"
-}
-
+    scoreLabel: "#4b0f63",
+    scoreValue: "#7a5cff"
+  }
 }
 
 function createEmptyBoard() {
@@ -428,7 +426,7 @@ function moveDown() {
 return (
 
 <main
-  className={`relative flex min-h-screen flex-col items-center justify-center z-0 ${currentTheme.page} ${currentTheme.text}`}
+  className={`relative flex min-h-screen flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}
 >
   <div
 className="absolute top-6 right-6 cursor-pointer z-50"
@@ -460,11 +458,12 @@ ref={bgMusicRef}
 src="/assets/sounds/bg-music.mp3"
 loop
 />
-
 <audio
 ref={mergeSoundRef}
-src="/assets/sounds/tile-merge.mp3"
+src="/sounds/tile-merge.mp3"
+preload="auto"
 />
+
   {showWinPopup && (
 
 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
@@ -505,7 +504,7 @@ src="/assets/sounds/tile-merge.mp3"
 </div>
 
 )}
-<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24 z-0">
+<div className="absolute inset-0 pointer-events-none opacity-10 flex flex-wrap items-center justify-center gap-24">
   <div className={`shelby-pattern ${currentTheme.pattern}`} />
 </div>
   <div className="flex gap-2 mb-4">
@@ -527,7 +526,7 @@ className="w-5 h-5 bg-[#7c3aed] shadow-md active:translate-y-[2px]"
 
 </div>
 <div
-className="px-12 py-4 rounded-2xl border-4 shadow-[0_8px_20px_rgba(0,0,0,0.25)] mb-1"
+className="px-12 py-4 rounded-2xl border-4 shadow-[0_8px_20px_rgba(0,0,0,0.25)] mb-5"
 style={{
 background: currentTheme.container,
 borderColor: currentTheme.border
@@ -545,7 +544,7 @@ Shelby 2048
 
 
 <div
-className="flex items-center justify-center gap-8 my-8 px-8 py-4 rounded-md border-4 shadow-md"
+className="flex items-center justify-center gap-8 mb-6 px-8 py-4 rounded-lg border-4 shadow-md"
 style={{
 background: currentTheme.container,
 borderColor: currentTheme.border
@@ -572,9 +571,7 @@ style={{ color: currentTheme.scoreValue }}
 
 <div
 className="w-[3px] h-10 shadow-inner"
-style={{
-background: currentTheme.border
-}}
+style={{ background: currentTheme.border }}
 ></div>
 
 <div className="flex flex-col items-center">
@@ -596,7 +593,6 @@ style={{ color: currentTheme.scoreValue }}
 </div>
 
 </div>
-
 <div className={`${currentTheme.board} p-3 rounded-xl shadow-2xl shadow-black/40`}>
 
 <div
