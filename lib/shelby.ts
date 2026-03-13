@@ -15,11 +15,17 @@ export async function saveScore(username: string, score: number) {
     }
   }
 
-  await fetch(RPC_URL, {
+  const res = await fetch(RPC_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(payload)
   })
+
+  const data = await res.json()
+
+  console.log("Shelbynet response:", data)
+
+  return data
 }
