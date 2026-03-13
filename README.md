@@ -1,6 +1,8 @@
 # Shelby 2048 — Decentralized Leaderboard Experiment
 
-![Shelby 2048 Banner](./public/shelby-banner.png)
+<p align="center">
+  <img src="public/Shelby-banner.png" width="900">
+</p>
 
 🎮 **Live Demo**  
 https://shelby-2048.vercel.app
