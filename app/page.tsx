@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { saveScore } from "@/lib/leaderboard"
 
 const themes = {
@@ -72,6 +72,7 @@ function combine(row: number[], addScore: (v: number) => void) {
 
       addScore(row[i])
 
+
 }
 
   }
@@ -85,6 +86,11 @@ export default function Home() {
   const [score, setScore] = useState(0)
   const [bestScore, setBestScore] = useState(0)
   const [gameOver, setGameOver] = useState(false)
+  
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null)
+  const mergeSoundRef = useRef<HTMLAudioElement | null>(null)
+
+  const [soundOn, setSoundOn] = useState(true)
   const [showWinPopup, setShowWinPopup] = useState(false)
   const [hasReached2048, setHasReached2048] = useState(false)
 
@@ -120,6 +126,27 @@ export default function Home() {
     }
 
   }, [score])
+
+  useEffect(() => {
+
+if(soundOn && mergeSoundRef.current){
+
+mergeSoundRef.current.currentTime = 0
+mergeSoundRef.current.play().catch(() => {})
+
+}
+
+}, [score])
+
+  useEffect(() => {
+
+if(soundOn){
+bgMusicRef.current?.play().catch(() => {})
+}else{
+bgMusicRef.current?.pause()
+}
+
+}, [soundOn])
 
   useEffect(() => {
 
@@ -382,6 +409,41 @@ return (
 <main
   className={`relative flex min-h-screen flex-col items-center justify-center ${currentTheme.page} ${currentTheme.text}`}
 >
+  <div
+className="absolute top-6 right-6 cursor-pointer z-50"
+onClick={() => setSoundOn(!soundOn)}
+>
+
+<div className="relative w-10 h-10">
+
+<img
+src="/assets/icons/speaker.png"
+className="w-10"
+/>
+
+{!soundOn && (
+
+<div className="absolute inset-0 flex items-center justify-center">
+
+<div className="w-8 h-[2px] bg-black rotate-45"></div>
+
+</div>
+
+)}
+
+</div>
+
+</div>
+  <audio
+ref={bgMusicRef}
+src="/assets/sounds/bg-music.mp3"
+loop
+/>
+
+<audio
+ref={mergeSoundRef}
+src="/assets/sounds/tile-merge.mp3"
+/>
   {showWinPopup && (
 
 <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
