@@ -5,6 +5,12 @@
       "score": 2048,
       "type": "human",
       "date": 1773465472307
+    },
+    {
+      "username": "testplayer",
+      "score": 999,
+      "type": "human",
+      "date": 1773467073937
     }
   ]
 }

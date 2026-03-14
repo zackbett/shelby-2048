@@ -125,7 +125,7 @@ export default function Home() {
   
 ])
 async function submitScore(username: string, score: number) {
-
+  console.log("SUBMIT SCORE", username, score)
   await fetch("/api/submit-score", {
     method: "POST",
     headers: {

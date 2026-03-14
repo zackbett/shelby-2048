@@ -1,47 +1,29 @@
-import fs from "fs/promises"
-import path from "path"
-
-export type ScoreEntry = {
+type Entry = {
   username: string
   score: number
-  type: "human" | "ai"
+  type: string
   date: number
 }
 
-const filePath = path.join(process.cwd(), "data", "leaderboard.json")
+let leaderboard: Entry[] = []
 
-export async function loadLeaderboard(): Promise<ScoreEntry[]> {
-  try {
-    const file = await fs.readFile(filePath, "utf-8")
-    const data = JSON.parse(file)
-
-    return data.scores.sort((a: ScoreEntry, b: ScoreEntry) => b.score - a.score)
-  } catch {
-    return []
-  }
-}
-
-export async function saveScore(username: string, score: number, type: "human" | "ai" = "human") {
-  const file = await fs.readFile(filePath, "utf-8")
-  const data = JSON.parse(file)
-
-  const entry: ScoreEntry = {
+export async function saveScore(
+  username: string,
+  score: number,
+  type: string
+) {
+  leaderboard.push({
     username,
     score,
     type,
     date: Date.now()
-  }
+  })
 
-  data.scores.push(entry)
+  leaderboard.sort((a, b) => b.score - a.score)
 
-  const sorted = data.scores
-    .sort((a: ScoreEntry, b: ScoreEntry) => b.score - a.score)
-    .slice(0, 20)
+  return leaderboard.slice(0, 10)
+}
 
-  await fs.writeFile(
-    filePath,
-    JSON.stringify({ scores: sorted }, null, 2)
-  )
-
-  return sorted
+export async function getLeaderboard() {
+  return leaderboard
 }

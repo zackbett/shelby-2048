@@ -1,26 +1,38 @@
-import { saveScore } from "@/lib/leaderboard"
 import { NextResponse } from "next/server"
+import { saveScore } from "@/lib/leaderboard"
 
 export async function POST(req: Request) {
-  const body = await req.json()
+  try {
+    const body = await req.json()
 
-  const { username, score, type } = body
+    const username = body.username
+    const score = body.score
+    const type = body.type || "human"
 
-  if (!username || !score) {
+    if (!username || score === undefined) {
+      return NextResponse.json(
+        { error: "invalid payload" },
+        { status: 400 }
+      )
+    }
+
+    const leaderboard = await saveScore(
+      username,
+      score,
+      type
+    )
+
+    return NextResponse.json({
+      success: true,
+      leaderboard
+    })
+
+  } catch (error) {
+    console.error("submit-score error:", error)
+
     return NextResponse.json(
-      { error: "invalid payload" },
-      { status: 400 }
+      { error: "server error" },
+      { status: 500 }
     )
   }
-
-  const leaderboard = await saveScore(
-    username,
-    score,
-    type || "human"
-  )
-
-  return NextResponse.json({
-    success: true,
-    leaderboard
-  })
 }
