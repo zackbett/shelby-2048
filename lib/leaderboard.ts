@@ -1,39 +1,47 @@
+import fs from "fs/promises"
+import path from "path"
+
 export type ScoreEntry = {
   username: string
   score: number
+  type: "human" | "ai"
   date: number
 }
 
-const STORAGE_KEY = "shelby2048_leaderboard"
+const filePath = path.join(process.cwd(), "data", "leaderboard.json")
 
-export function loadLeaderboard(): ScoreEntry[] {
+export async function loadLeaderboard(): Promise<ScoreEntry[]> {
+  try {
+    const file = await fs.readFile(filePath, "utf-8")
+    const data = JSON.parse(file)
 
-  if (typeof window === "undefined") return []
-
-  const data = localStorage.getItem(STORAGE_KEY)
-
-  if (!data) return []
-
-  return JSON.parse(data)
+    return data.scores.sort((a: ScoreEntry, b: ScoreEntry) => b.score - a.score)
+  } catch {
+    return []
+  }
 }
 
-export function saveScore(username: string, score: number) {
-
-  const leaderboard = loadLeaderboard()
+export async function saveScore(username: string, score: number, type: "human" | "ai" = "human") {
+  const file = await fs.readFile(filePath, "utf-8")
+  const data = JSON.parse(file)
 
   const entry: ScoreEntry = {
     username,
     score,
+    type,
     date: Date.now()
   }
 
-  leaderboard.push(entry)
+  data.scores.push(entry)
 
-  leaderboard.sort((a, b) => b.score - a.score)
+  const sorted = data.scores
+    .sort((a: ScoreEntry, b: ScoreEntry) => b.score - a.score)
+    .slice(0, 20)
 
-  const top10 = leaderboard.slice(0, 10)
+  await fs.writeFile(
+    filePath,
+    JSON.stringify({ scores: sorted }, null, 2)
+  )
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(top10))
-
-  return top10
+  return sorted
 }
