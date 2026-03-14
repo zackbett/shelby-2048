@@ -1,3 +1,10 @@
 {
-  "scores": []
+  "scores": [
+    {
+      "username": "majyy",
+      "score": 2048,
+      "type": "human",
+      "date": 1773465472307
+    }
+  ]
 }
