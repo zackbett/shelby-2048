@@ -124,20 +124,24 @@ export default function Home() {
   const [leaderboard, setLeaderboard] = useState<Player[]>([
   
 ])
-function submitScore(username: string, score: number) {
+async function submitScore(username: string, score: number) {
 
-  const updated: Player[] = [...leaderboard]
-
-  updated.push({
-    username,
-    score
+  await fetch("/api/submit-score", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      score,
+      type: "human"
+    })
   })
 
-  updated.sort((a,b)=> b.score - a.score)
+  const res = await fetch("/api/leaderboard")
+  const data = await res.json()
 
-  const top10 = updated.slice(0,10)
-
-  setLeaderboard(top10)
+  setLeaderboard(data)
 
 }
   const [gameOver, setGameOver] = useState(false)
@@ -185,29 +189,14 @@ function submitScore(username: string, score: number) {
   useEffect(() => {
 
   async function loadLeaderboard() {
-    const res = await getLeaderboard()
 
-    if (!res?.result) return
+  const res = await fetch("/api/leaderboard")
 
-    const players = res.result.map((blob: any) => {
+  const data = await res.json()
 
-      const raw = blob.data || blob.value
+  setLeaderboard(data)
 
-      if (!raw) return null
-
-      const data = JSON.parse(raw)
-
-      return {
-        username: data.username,
-        score: data.score
-      }
-
-    }).filter(Boolean)
-
-    players.sort((a: any, b: any) => b.score - a.score)
-
-    setLeaderboard(players.slice(0, 10))
-  }
+}
 
   loadLeaderboard()
 
